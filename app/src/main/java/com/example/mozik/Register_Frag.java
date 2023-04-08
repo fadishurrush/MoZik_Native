@@ -18,10 +18,16 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,6 +48,7 @@ public class Register_Frag extends Fragment {
     // Variables
     private FireBaseServices fbs = FireBaseServices.getinstance();
     private FirebaseUser mUser;
+    private FirebaseFirestore db=fbs.getDb();
     private Button btnRegister,btnGoToLogin;
     private EditText etemailRegister,etpasswordRegister,etconfirmpasswordRegister;
     private FirebaseAuth mAuth=fbs.getmAuth();
@@ -89,7 +96,6 @@ public class Register_Frag extends Fragment {
     public void onStart() {
         super.onStart();
         connectComponents();
-//        mUser = mAuth.getCurrentUser();
         btnGoToLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -138,13 +144,13 @@ public class Register_Frag extends Fragment {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
-                    ft.replace(R.id.framelayout, new HomePage_Frag());
-                    ft.commit();
                     Toast.makeText(getContext(), "successfully created", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(getContext(), "failed to create account!", Toast.LENGTH_SHORT).show();
                 }
+
+
+
             }
         });
 

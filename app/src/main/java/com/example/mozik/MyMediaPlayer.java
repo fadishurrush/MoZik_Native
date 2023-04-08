@@ -12,5 +12,8 @@ public class MyMediaPlayer {
         return instance;
     }
 
+    public static String currentTitle = "-1";
+    public static AudioModel previousSong = new AudioModel();
+    public static int leftoff = -1;
     public static int currentIndex = -1;
 }

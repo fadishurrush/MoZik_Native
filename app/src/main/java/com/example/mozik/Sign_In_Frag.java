@@ -1,5 +1,7 @@
 package com.example.mozik;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -39,6 +41,7 @@ public class Sign_In_Frag extends Fragment {
     private EditText etEmail,etPassword;
     private Button btnSignIn;
     private FireBaseServices fbs = FireBaseServices.getinstance();
+    public static final String SHARED_PREF = "sharedPrefs";
 
     public Sign_In_Frag() {
         // Required empty public constructor
@@ -68,6 +71,17 @@ public class Sign_In_Frag extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+        CheckUser();
+    }
+
+    private void CheckUser() {
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SHARED_PREF,Context.MODE_PRIVATE);
+        String check = sharedPreferences.getString("name" , "");
+        if (check.equals("true")){
+            FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.framelayout, new HomePage_Frag());
+            ft.commit();
         }
     }
 
@@ -116,6 +130,11 @@ public class Sign_In_Frag extends Fragment {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
+                    SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                    editor.putString("name" , "true");
+                    editor.apply();
                     FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.framelayout, new HomePage_Frag());
                     ft.commit();

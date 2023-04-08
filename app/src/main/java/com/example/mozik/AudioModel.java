@@ -12,6 +12,11 @@ public class AudioModel implements Serializable {
         this.title = title;
         this.duration = duration;
     }
+    public AudioModel(){
+        this.path="";
+        this.title="";
+        this.duration="";
+    }
 
     public String getPath() {
         return path;
@@ -35,5 +40,10 @@ public class AudioModel implements Serializable {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+    public void setSong(AudioModel song){
+        this.title= song.getTitle();
+        this.path= song.getPath();
+        this.duration= song.getDuration();
     }
 }

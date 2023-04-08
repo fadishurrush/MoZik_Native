@@ -1,25 +1,42 @@
 package com.example.mozik;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
+import static com.example.mozik.Sign_In_Frag.SHARED_PREF;
+
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.appcompat.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +60,13 @@ public class HomePage_Frag extends Fragment {
     // Variables
     private RecyclerView recyclerView;
     private TextView tvNomusic;
+    private SearchView searchView;
     private ArrayList<AudioModel> songslist = new ArrayList<>();
+    private ArrayList<AudioModel> favorites = new ArrayList<>();
+    private MusicListAdapter musicListAdapter;
+    private FirebaseFirestore db = FireBaseServices.getinstance().getDb();
+    private FirebaseAuth mAuth = FireBaseServices.getinstance().getmAuth();
+
     public HomePage_Frag() {
         // Required empty public constructor
     }
@@ -52,13 +75,26 @@ public class HomePage_Frag extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
         connect();
         if(checkPermission()== false){
             requestPermission();
             return;
         }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                filterList(s);
+                return true;
+            }
+        });
         Context applicationContext = MainActivity.getContextOfApplication();
-        applicationContext.getContentResolver();
+           applicationContext.getContentResolver();
         String[] projection={
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DATA,
@@ -77,13 +113,78 @@ public class HomePage_Frag extends Fragment {
             tvNomusic.setVisibility(View.VISIBLE);
         }else{
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            recyclerView.setAdapter(new MusicListAdapter(songslist,applicationContext));
+            recyclerView.setAdapter(musicListAdapter);
+        }
+
+    }
+
+    private void read() {
+        db.collection("Favs")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                if (document != null) {
+                                    if (document.get("user").equals(mAuth.getUid())) {
+                                        Log.d(TAG, "same user: "+document);
+                                        for (AudioModel song: songslist
+                                             ) {
+                                            if (song.getTitle().equals(document.get("fav"))){
+                                                favorites.add(song);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (favorites.size()==0){
+                                tvNomusic.setVisibility(View.VISIBLE);
+                            }else{
+                                tvNomusic.setVisibility(View.GONE);
+
+                                musicListAdapter.setSongslist(favorites);
+
+                            }
+                            Log.d(TAG, "onComplete: " + favorites);
+                        } else {
+                            tvNomusic.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+    }
+
+    private void filterList(String text) {
+     ArrayList<AudioModel> filteredList = new ArrayList<>();
+        for (AudioModel song:
+             songslist) {
+            if (song.getTitle().toLowerCase().contains(text.toLowerCase())){
+                filteredList.add(song);
+            }
+            if (filteredList.isEmpty()){
+                musicListAdapter.setFilteredList(filteredList);
+                tvNomusic.setVisibility(View.VISIBLE);
+            }else{
+                musicListAdapter.setFilteredList(filteredList);
+                tvNomusic.setVisibility(View.GONE);
+
+            }
         }
     }
 
     private void connect() {
         recyclerView=getView().findViewById(R.id.RecyclerView);
         tvNomusic=getView().findViewById(R.id.tvNoSongs);
+        searchView=getView().findViewById(R.id.search_bar);
+        searchView.clearFocus();
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.onActionViewExpanded();
+            }
+        });
+        searchView.setQueryHint("Search here");
+        musicListAdapter=new MusicListAdapter(songslist,getContext());
     }
     public boolean checkPermission(){
         int result= ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -123,9 +224,52 @@ public class HomePage_Frag extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.add("Favorites");
+        menu.add("in Device");
+        menu.add("log out");
+
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getTitle().toString()){
+            case "Favorites" :{
+               read();
+                Toast.makeText(getContext(), " fav selected", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            case "in Device" :{
+                musicListAdapter.setSongslist(songslist);
+                Toast.makeText(getContext(), " device selected", Toast.LENGTH_SHORT).show();
+                return true;
+
+            }
+            case "log out" :{
+                mAuth.signOut();
+                SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("name" , "false");
+                editor.apply();
+                FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.framelayout, new Sign_In_Frag());
+                ft.commit();
+                Toast.makeText(getContext(), "signed out.", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -140,7 +284,7 @@ public class HomePage_Frag extends Fragment {
     public void onResume() {
         super.onResume();
         if (recyclerView!=null){
-            recyclerView.setAdapter(new MusicListAdapter(songslist, getActivity().getApplicationContext()));
+            musicListAdapter.setFilteredList(songslist);
         }
     }
 }

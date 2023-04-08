@@ -16,16 +16,26 @@
         android:id="@+id/icon_view"
         android:src="@drawable/music_icon"
         />
+
     <TextView
+        android:id="@+id/tvmusicTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:id="@+id/tvmusicTitle"
         android:layout_toEndOf="@+id/icon_view"
-        android:padding="10dp"
-        android:maxLines="1"
         android:ellipsize="end"
-        tools:text="Music"
+        android:maxLines="1"
+        android:padding="10dp"
         android:textColor="@color/black"
-        />
+        tools:text="Music"
+        android:layout_marginRight="15dp"/>
+
+    <ImageButton
+        android:id="@+id/d3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:backgroundTint="#EFEFEF"
+        android:src="@drawable/ic_baseline_more_vert_24" />
 </RelativeLayout>
