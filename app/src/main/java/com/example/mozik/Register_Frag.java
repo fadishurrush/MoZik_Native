@@ -2,7 +2,11 @@ package com.example.mozik;
 
 import static android.content.ContentValues.TAG;
 
+import static com.example.mozik.Sign_In_Frag.SHARED_PREF;
+
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -144,7 +148,14 @@ public class Register_Frag extends Fragment {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
+                    SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("name" , "true");
+                    editor.apply();
                     Toast.makeText(getContext(), "successfully created", Toast.LENGTH_SHORT).show();
+                    FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
+                    ft.replace(R.id.framelayout, new HomePage_Frag());
+                    ft.commit();
                 }else{
                     Toast.makeText(getContext(), "failed to create account!", Toast.LENGTH_SHORT).show();
                 }
