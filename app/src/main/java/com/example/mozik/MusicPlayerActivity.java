@@ -148,6 +148,7 @@ public class MusicPlayerActivity extends AppCompatActivity {
         MyMediaPlayer.currentIndex +=1;
         mediaPlayer.reset();
         setResourcesWithMusic();
+        MyMediaPlayer.currentTitle = currentSong.getTitle();
         preparePlayer();
     }
     private void playPreviousSong(){
@@ -158,6 +159,7 @@ public class MusicPlayerActivity extends AppCompatActivity {
         MyMediaPlayer.currentIndex -=1;
         mediaPlayer.reset();
         setResourcesWithMusic();
+        MyMediaPlayer.currentTitle = currentSong.getTitle();
         preparePlayer();
     }
     private void pausePlay(){
