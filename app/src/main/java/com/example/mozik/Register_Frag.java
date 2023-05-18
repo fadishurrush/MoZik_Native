@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -32,6 +33,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -56,7 +59,7 @@ public class Register_Frag extends Fragment {
     private Button btnRegister,btnGoToLogin;
     private EditText etemailRegister,etpasswordRegister,etconfirmpasswordRegister;
     private FirebaseAuth mAuth=fbs.getmAuth();
-
+    private BottomNavigationView bn ;
 
     public Register_Frag() {
         // Required empty public constructor
@@ -141,29 +144,34 @@ public class Register_Frag extends Fragment {
         if(!confpassword.equals(password)){
             Toast.makeText(getContext(), "confirm password does not match", Toast.LENGTH_LONG).show();
             etconfirmpasswordRegister.requestFocus();
-
+            return;
         }
         Log.d(TAG, "valid() called with: email = [" + email + "], password = [" + password + "], confpassword = [" + confpassword + "]");
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("name" , "true");
-                    editor.apply();
-                    Toast.makeText(getContext(), "successfully created", Toast.LENGTH_SHORT).show();
-                    FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
-                    ft.replace(R.id.framelayout, new HomePage_Frag());
-                    ft.commit();
-                }else{
-                    Toast.makeText(getContext(), "failed to create account!", Toast.LENGTH_SHORT).show();
-                }
-
-
-
-            }
-        });
+        mAuth
+                .createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        Toast.makeText(getContext(), "acc created", Toast.LENGTH_SHORT).show();
+                        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("name" , "true");
+                        editor.apply();
+                        CreateUser(getView());
+                        Log.d(TAG, "onSuccess: acc created");
+                        FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.framelayout, new HomePage_Frag());
+                        ft.commit();
+                        bn.setVisibility(View.VISIBLE);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "failed", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onFailure: failed");
+                    }
+                });
 
     }
     private void connectComponents() {
@@ -172,5 +180,26 @@ public class Register_Frag extends Fragment {
         etconfirmpasswordRegister = getView().findViewById(R.id.etPasswordConfirm);
         btnRegister = getView().findViewById(R.id.btnRegister);
         btnGoToLogin = getView().findViewById(R.id.btnBackToLogin);
+        bn = getActivity().findViewById(R.id.bottomNavBar);
+        bn.setVisibility(View.GONE);
+    }
+    public void CreateUser(View view) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("name",mAuth.getCurrentUser().getDisplayName());
+        user.put("Uid", mAuth.getUid());
+
+
+        db.collection("Users").add(user).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+
+                    }
+                });
+
     }
 }

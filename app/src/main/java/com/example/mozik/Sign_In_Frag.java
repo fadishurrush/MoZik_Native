@@ -18,7 +18,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.AuthResult;
+
+import org.checkerframework.common.subtyping.qual.Bottom;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,7 +45,7 @@ public class Sign_In_Frag extends Fragment {
     private Button btnSignIn;
     private FireBaseServices fbs = FireBaseServices.getinstance();
     public static final String SHARED_PREF = "sharedPrefs";
-
+     private BottomNavigationView bn ;
     public Sign_In_Frag() {
         // Required empty public constructor
     }
@@ -138,6 +141,7 @@ public class Sign_In_Frag extends Fragment {
                     FragmentTransaction ft =getActivity().getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.framelayout, new HomePage_Frag());
                     ft.commit();
+                    bn.setVisibility(View.VISIBLE);
                     Toast.makeText(getContext(), "Logged in successfully (Y)", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(getContext(), "log in failed", Toast.LENGTH_SHORT).show();
@@ -158,5 +162,7 @@ public class Sign_In_Frag extends Fragment {
         etPassword= getView().findViewById(R.id.etPassword);
         btnSignIn= getView().findViewById(R.id.btnSignIn);
        tvRegister = getView().findViewById(R.id.tvRegister);
+       bn=getActivity().findViewById(R.id.bottomNavBar);
+       bn.setVisibility(View.GONE);
     }
 }

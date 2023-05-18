@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -67,6 +68,7 @@ public class HomePage_Frag extends Fragment {
     private FirebaseFirestore db = FireBaseServices.getinstance().getDb();
     private FirebaseAuth mAuth = FireBaseServices.getinstance().getmAuth();
 
+    private BottomNavigationView bn ;
     public HomePage_Frag() {
         // Required empty public constructor
     }
@@ -175,6 +177,8 @@ public class HomePage_Frag extends Fragment {
     private void connect() {
         recyclerView=getView().findViewById(R.id.RecyclerView);
         tvNomusic=getView().findViewById(R.id.tvNoSongs);
+        bn= getActivity().findViewById(R.id.bottomNavBar);
+        bn.setVisibility(View.VISIBLE);
         searchView=getView().findViewById(R.id.search_bar);
         searchView.clearFocus();
         searchView.setOnClickListener(new View.OnClickListener() {
@@ -185,6 +189,7 @@ public class HomePage_Frag extends Fragment {
         });
         searchView.setQueryHint("Search here");
         musicListAdapter=new MusicListAdapter(songslist,getContext());
+
     }
     public boolean checkPermission(){
         int result= ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE);
