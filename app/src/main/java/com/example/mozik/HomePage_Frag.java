@@ -81,43 +81,44 @@ public class HomePage_Frag extends Fragment {
         connect();
         if(checkPermission()== false){
             requestPermission();
-            return;
-        }
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                return false;
-            }
+        }else {
 
-            @Override
-            public boolean onQueryTextChange(String s) {
-                filterList(s);
-                return true;
-            }
-        });
-        Context applicationContext = MainActivity.getContextOfApplication();
-           applicationContext.getContentResolver();
-        String[] projection={
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.DURATION
-        };
-        String selection = MediaStore.Audio.Media.IS_MUSIC +" != 0";
-        Cursor cursor = applicationContext.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,projection,selection,null,null);
-        while (cursor.moveToNext()){
-            AudioModel songData = new AudioModel(cursor.getString(1),cursor.getString(0),cursor.getString(2));
-            if(new File(songData.getPath()).exists()){
-                songslist.add(songData);
-            }
 
-        }
-        if(songslist.size()==0){
-            tvNomusic.setVisibility(View.VISIBLE);
-        }else{
-            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            recyclerView.setAdapter(musicListAdapter);
-        }
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String s) {
+                    return false;
+                }
 
+                @Override
+                public boolean onQueryTextChange(String s) {
+                    filterList(s);
+                    return true;
+                }
+            });
+            Context applicationContext = MainActivity.getContextOfApplication();
+            applicationContext.getContentResolver();
+            String[] projection = {
+                    MediaStore.Audio.Media.TITLE,
+                    MediaStore.Audio.Media.DATA,
+                    MediaStore.Audio.Media.DURATION
+            };
+            String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+            Cursor cursor = applicationContext.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, selection, null, null);
+            while (cursor.moveToNext()) {
+                AudioModel songData = new AudioModel(cursor.getString(1), cursor.getString(0), cursor.getString(2));
+                if (new File(songData.getPath()).exists()) {
+                    songslist.add(songData);
+                }
+
+            }
+            if (songslist.size() == 0) {
+                tvNomusic.setVisibility(View.VISIBLE);
+            } else {
+                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                recyclerView.setAdapter(musicListAdapter);
+            }
+        }
     }
 
     private void read() {
@@ -145,7 +146,7 @@ public class HomePage_Frag extends Fragment {
                             }else{
                                 tvNomusic.setVisibility(View.GONE);
 
-                                musicListAdapter.setSongslist(favorites);
+                                musicListAdapter.setFilteredList(favorites);
 
                             }
                             Log.d(TAG, "onComplete: " + favorites);
@@ -255,7 +256,7 @@ public class HomePage_Frag extends Fragment {
                 return true;
             }
             case "in Device" :{
-                musicListAdapter.setSongslist(songslist);
+                musicListAdapter.setFilteredList(songslist);
                 Toast.makeText(getContext(), " device selected", Toast.LENGTH_SHORT).show();
                 return true;
 

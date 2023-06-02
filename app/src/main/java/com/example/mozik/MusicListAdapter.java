@@ -54,10 +54,6 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListAdapter.View
         notifyDataSetChanged();
     }
 
-    public void setSongslist(ArrayList<AudioModel> list) {
-        this.songslist = list;
-        notifyDataSetChanged();
-    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

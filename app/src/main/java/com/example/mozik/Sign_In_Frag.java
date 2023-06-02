@@ -40,7 +40,7 @@ public class Sign_In_Frag extends Fragment {
     private String mParam2;
 
     // Variables
-    private TextView tvRegister;
+    private TextView tvRegister,forgotpass;
     private EditText etEmail,etPassword;
     private Button btnSignIn;
     private FireBaseServices fbs = FireBaseServices.getinstance();
@@ -113,6 +113,25 @@ public class Sign_In_Frag extends Fragment {
                 goToRegister(view);
             }
         });
+        forgotpass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (etEmail.getText().toString().trim().isEmpty()){
+                    Toast.makeText(getContext(), "email field is empty", Toast.LENGTH_SHORT).show();
+                }else{
+                    fbs.getmAuth().sendPasswordResetEmail(etEmail.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()){
+                                Toast.makeText(getContext(), "email Sent", Toast.LENGTH_SHORT).show();
+                            }else  {
+                                Toast.makeText(getContext(), "failed to send email", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private void valid() {
@@ -157,7 +176,7 @@ public class Sign_In_Frag extends Fragment {
     }
 
     public void connect(){
-
+        forgotpass=getView().findViewById(R.id.forgotPass);
         etEmail= getView().findViewById(R.id.etEmail);
         etPassword= getView().findViewById(R.id.etPassword);
         btnSignIn= getView().findViewById(R.id.btnSignIn);

@@ -254,6 +254,7 @@ public class ProfileFragment extends Fragment {
                         progressBar.setVisibility(View.GONE);
                         avatar.setImageBitmap(bitmap);
                     }
+
                 });
 
 
